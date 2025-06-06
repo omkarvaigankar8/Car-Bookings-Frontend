@@ -1,5 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* @tailwind base;
+@tailwind components; */
+@tailwind utilities;
+
+@import 'react-day-picker/dist/style.css';
+
 /* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap'); */
 
 
@@ -65,7 +71,7 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  /* place-items: center; */
   min-width: 320px;
   min-height: 100vh;
 }
@@ -79,7 +85,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: black;
   cursor: pointer;
   transition: border-color 0.25s;
 }
