@@ -1,7 +1,7 @@
 // components/bookings/columns.ts
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Booking } from "@/lib/types/bookings";
-
+import moment from 'moment'
 export const columns: ColumnDef<Booking>[] = [
     {
         accessorKey: "id",
@@ -27,11 +27,14 @@ export const columns: ColumnDef<Booking>[] = [
     {
         header: "Start Date",
         cell: ({ row }) =>
-            new Date(row.original.startDate).toLocaleString(),
+            // new Date(row.original.startDate).toLocaleString(),
+            moment(row.original.startDate).format('ll')
+
     },
     {
         header: "End Date",
         cell: ({ row }) =>
-            new Date(row.original.endDate).toLocaleString(),
+            // new Date(row.original.endDate).toLocaleString(),
+            moment(row.original.endDate).format('ll')
     },
 ];

@@ -39,10 +39,12 @@ const StepForm = ({ onComplete }: StepFormProps) => {
     const onNext = async () => {
         const currentSchema = schemas[currentStep];
         const values = methods.getValues();
+        methods.clearErrors();
         const result = currentSchema.safeParse(values);
 
         if (result.success) {
             setCurrentStep((step) => Math.min(step + 1, steps.length - 1));
+
         } else {
             // const formErrors = result.error.format();
 
@@ -71,9 +73,9 @@ const StepForm = ({ onComplete }: StepFormProps) => {
 
         if (result.success) {
             const allData = methods.getValues(); // now final data
-            console.log('Submitting', allData);
-            const response = await createBooking(allData)
-            console.log("RESPONSE", response)
+            //console.log('Submitting', allData);
+            await createBooking(allData)
+            // //console.log("RESPONSE", response)
             if (onComplete) onComplete();
             // Call your backend API here
         } else {
@@ -89,7 +91,7 @@ const StepForm = ({ onComplete }: StepFormProps) => {
         }
     };
 
-    console.log('Current step:', currentStep);
+    //console.log('Current step:', currentStep);
     return (
         <FormProvider{...methods}>
             <form onSubmit={methods.handleSubmit(onSubmit)}>
@@ -97,23 +99,21 @@ const StepForm = ({ onComplete }: StepFormProps) => {
                 <StepComponent />
 
                 {/* Display errors for the current step */}
-                <div className="flex justify-end gap-4 mt-6">
+                <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
                     {currentStep > 0 && (
-                        <Button type="button" onClick={onBack}>
+                        <Button type="button" onClick={onBack} className="w-full sm:w-auto">
                             Back
                         </Button>
                     )}
-
                     {currentStep < steps.length - 1 ? (
-                        <Button type="button" onClick={onNext}>
+                        <Button type="button" onClick={onNext} className="w-full sm:w-auto">
                             Next
                         </Button>
                     ) : (
-                        <Button type="button" onClick={onSubmit}>
+                        <Button type="button" onClick={onSubmit} className="w-full sm:w-auto">
                             Submit
                         </Button>
                     )}
-
                 </div>
             </form>
         </FormProvider>

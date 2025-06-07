@@ -1,5 +1,5 @@
 export const bookingsTransformer = (data: any) => {
-    console.log("bookingsTransformer", data)
+    //console.log("bookingsTransformer", data)
     const transformed = {
         "userFirstName": data.firstName,
         "userLastName": data.lastName,

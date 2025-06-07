@@ -14,12 +14,16 @@ export function Step2Wheels() {
     const [vehiclesWheels, setVehiclesWheels] = useState<Number[]>([]);
     // const [isLoading, setIsLoading] = useState(false);
     const fetchVehicleWheels = useCallback(async () => {
+        //console.log("wheels", wheels)
+        //console.log("vehiclesWheels", vehiclesWheels)
         // setIsLoading(true);
         try {
             const types = await getVehicleWheels();
-            setValue('wheels', types[0], { shouldValidate: true })
+            if (!wheels) {
+                setValue('wheels', types[0], { shouldValidate: true })
+            }
             setVehiclesWheels(types);
-            console.log("types", types)
+            //console.log("types", types)
             // Set initial value if not set
         } catch (error) {
             console.error("Failed to fetch vehicle types:", error);
@@ -27,7 +31,7 @@ export function Step2Wheels() {
             // setIsLoading(false);
         }
     }, [setValue]);
-    console.log("Wheels", wheels)
+    //console.log("Wheels", wheels)
     useEffect(() => {
         fetchVehicleWheels();
     }, [fetchVehicleWheels]);
@@ -36,7 +40,7 @@ export function Step2Wheels() {
         <div className="p-4">
             <h2 className="text-xl mb-4"><span className='font-semibold'>Step 2: </span>Number of Wheels</h2>
             {vehiclesWheels?.length > 0 && <RadioGroup
-                defaultValue={`${wheels}`}
+                value={`${wheels}`}
                 onValueChange={(value) => {
                     setValue('wheels', value, { shouldValidate: true });
                 }}

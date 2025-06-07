@@ -30,13 +30,13 @@ export function DataTable<TData, TValue>({
     });
 
     return (
-        <div className="rounded-md border">
-            <Table>
+        <div className="rounded-md border max-w-[335px] sm:max-w-[100%]">
+            <Table className=" overflow-auto">
                 <TableHeader>
                     {table.getHeaderGroups().map((group) => (
                         <TableRow key={group.id}>
                             {group.headers.map((header) => (
-                                <TableHead key={header.id} className="text-right p-3">
+                                <TableHead key={header.id} className="text-right p-3 whitespace-nowrap">
                                     {flexRender(
                                         header.column.columnDef.header,
                                         header.getContext()
@@ -51,7 +51,7 @@ export function DataTable<TData, TValue>({
                         table.getRowModel().rows.map((row) => (
                             <TableRow key={row.id}>
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id} className="text-right p-3">
+                                    <TableCell key={cell.id} className="text-right p-3 whitespace-nowrap">
                                         {flexRender(
                                             cell.column.columnDef.cell,
                                             cell.getContext()

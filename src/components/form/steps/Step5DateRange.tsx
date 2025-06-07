@@ -1,128 +1,131 @@
-import { useState, useRef, useEffect } from 'react';
-import { DayPicker } from 'react-day-picker';
+import { useState, useEffect } from 'react';
+import { DateRangePicker } from 'react-date-range';
+import type { RangeKeyDict } from 'react-date-range';
+import 'react-date-range/dist/styles.css'; // main css file
+import 'react-date-range/dist/theme/default.css'; // theme css file
 import { Controller, useFormContext } from 'react-hook-form';
-import 'react-day-picker/style.css';
+import { useMediaQuery } from 'react-responsive';
 
 const Step5DateRange = () => {
   const {
     control,
-    formState: { errors, isSubmitted },
-    trigger
+    formState: { errors },
+    setValue,
+    trigger,
+    watch
   } = useFormContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  console.log("errrr", errors)
-  // Close calendar when clicking outside
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
+  const dateRangeValue = watch('dateRange');
+
+  // Initialize with form values or empty dates
+  const [selectionRange, setSelectionRange] = useState({
+    startDate: dateRangeValue?.startDate ? new Date(dateRangeValue.startDate) : new Date(),
+    endDate: dateRangeValue?.endDate ? new Date(dateRangeValue.endDate) : new Date(),
+    key: 'selection',
+  });
+
+  // Update local state when form values change
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        trigger("dateRange"); // Validate when closing without selection
-      }
-    };
+    if (dateRangeValue?.startDate && dateRangeValue?.endDate) {
+      setSelectionRange({
+        startDate: new Date(dateRangeValue.startDate),
+        endDate: new Date(dateRangeValue.endDate),
+        key: 'selection',
+      });
+    }
+  }, [dateRangeValue]);
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [trigger]);
+  const handleSelect = (ranges: RangeKeyDict): void => {
+    const { startDate, endDate } = ranges.selection;
 
-  const setToStartOfDay = (date: Date) => {
-    const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
-    return newDate;
+    if (startDate && endDate) {
+      // Set time to midnight to match your schema requirements
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(endDate);
+      end.setHours(0, 0, 0, 0);
+
+      setSelectionRange({
+        startDate: start,
+        endDate: end,
+        key: 'selection',
+      });
+
+      // Update form values
+      setValue('dateRange', {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+      }, { shouldValidate: true });
+
+      // Trigger validation
+      trigger('dateRange');
+    }
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Select Rental Dates</h2>
-      <div ref={containerRef} className="relative inline-block">
-        <Controller
-          name="dateRange"
-          control={control}
-          render={({ field }) => {
-            const hasError = errors.dateRange;
-            const showError = isSubmitted || field.value?.startDate || field.value?.endDate;
+    <div className="p-4">
+      <h2 className="text-xl mb-4"><span className='font-semibold'>Step 5: </span>Select Rental Dates</h2>
 
-            return (
-              <>
-                <input
-                  type="text"
-                  value={
-                    field.value?.startDate && field.value?.endDate
-                      ? `${new Date(field.value.startDate).toLocaleDateString()} - ${new Date(field.value.endDate).toLocaleDateString()}`
-                      : field.value?.startDate
-                        ? `${new Date(field.value.startDate).toLocaleDateString()} - ...`
-                        : ""
-                  }
-                  readOnly
-                  onClick={() => {
-                    setIsOpen(true);
-                    if (!field.value?.startDate && !field.value?.endDate) {
-                      trigger("dateRange");
-                    }
-                  }}
-                  placeholder="Select date range"
-                  className={`w-64 px-3 py-2 border rounded-md cursor-pointer focus:outline-none focus:ring-2 ${hasError && showError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
-                    }`}
-                />
+      <Controller
+        name="dateRange"
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col space-y-4">
+            <div className="border rounded-md overflow-hidden">
+              <DateRangePicker
+                ranges={[selectionRange]}
+                onChange={handleSelect}
+                moveRangeOnFirstSelection={false}
+                months={1}
+                direction={isMobile ? 'vertical' : 'horizontal'}
+                rangeColors={['#3b82f6']}
+                className="w-full"
+                showMonthAndYearPickers={!isMobile}
+                showDateDisplay={!isMobile}
+                editableDateInputs={true}
+                showPreview={!isMobile}
+                staticRanges={isMobile ? [] : undefined}
+                inputRanges={isMobile ? [] : undefined}
+                minDate={new Date()}
+              />
+            </div>
 
-                {isOpen && (
-                  <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
-                    <DayPicker
-                      mode="range"
-                      selected={{
-                        from: field.value?.startDate ? new Date(field.value.startDate) : undefined,
-                        to: field.value?.endDate ? new Date(field.value.endDate) : undefined
-                      }}
-                      onSelect={(range) => {
-                        if (range?.from) {
-                          const newValue = {
-                            startDate: setToStartOfDay(range.from).toISOString(),
-                            endDate: range.to ? setToStartOfDay(range.to).toISOString() : undefined
-                          };
-                          field.onChange(newValue);
-                          trigger("dateRange");
-                          if (range.to) setIsOpen(false);
-                        }
-                      }}
-                      numberOfMonths={2}
-                      footer={
-                        <div className="p-2 text-sm text-gray-600 border-t">
-                          {field.value?.startDate ? (
-                            field.value.endDate ? (
-                              `Selected: ${new Date(field.value.startDate).toLocaleDateString()} to ${new Date(field.value.endDate).toLocaleDateString()}`
-                            ) : (
-                              `Select end date (${new Date(field.value.startDate).toLocaleDateString()} to ...)`
-                            )
-                          ) : (
-                            "Pick a date range"
-                          )}
-                        </div>
-                      }
-                      className="border-0"
-                    />
-                  </div>
-                )}
-              </>
-            );
-          }}
-        />
-      </div>
+            <div className="text-sm text-gray-600">
+              {field.value?.startDate && field.value?.endDate ? (
+                `Selected: ${formatDate(new Date(field.value.startDate))} to ${formatDate(new Date(field.value.endDate))}`
+              ) : (
+                'Please select a date range'
+              )}
+            </div>
+          </div>
+        )}
+      />
 
       {/* Error messages */}
-      {typeof errors.dateRange === 'object' && errors.dateRange !== null && (
-        ('startDate' in errors.dateRange || 'endDate' in errors.dateRange || 'message' in errors.dateRange) && (
-          <div className="text-sm text-red-600 space-y-1 mt-1">
-            {'startDate' in errors.dateRange && (errors.dateRange as any).startDate?.message && (
-              <p>{(errors.dateRange as any).startDate.message}</p>
-            )}
-            {'endDate' in errors.dateRange && (errors.dateRange as any).endDate?.message && (
-              <p>{(errors.dateRange as any).endDate.message}</p>
-            )}
-            {'message' in errors.dateRange && typeof errors.dateRange.message === 'string' && (
-              <p>{errors.dateRange.message}</p>
-            )}
-          </div>
-        )
+      {errors.dateRange && (
+        <div className="text-sm text-red-600 space-y-1 mt-1">
+          {'startDate' in (errors.dateRange || {}) && (errors.dateRange as any).startDate?.message && (
+            <p>{(errors.dateRange as any).startDate.message}</p>
+          )}
+          {'endDate' in (errors.dateRange || {}) && (errors.dateRange as any).endDate?.message && (
+            <p>{(errors.dateRange as any).endDate.message}</p>
+          )}
+          {typeof errors.dateRange.message === 'string' && (
+            <p>{errors.dateRange.message}</p>
+          )}
+        </div>
       )}
     </div>
   );

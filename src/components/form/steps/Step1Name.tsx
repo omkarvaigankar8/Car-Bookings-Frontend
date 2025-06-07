@@ -5,7 +5,7 @@ export function Step1Name() {
         register,
         formState: { errors },
     } = useFormContext();
-    console.log("errors", errors);
+    //console.log("errors", errors);
     return (
         <div className="p-4">
             <h2 className="text-xl mb-4"><span className='font-semibold'>Step 1: </span>What is your name?</h2>

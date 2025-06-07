@@ -2,14 +2,13 @@ import axiosInstance from "@/api/axiosInstance";
 import type { BookingsResponse, UseBookingsParams } from "@/lib/types/bookings";
 import { bookingsTransformer } from "@/utils/helperFunction";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const getVehicle = async (vehicleTypeId: number): Promise<[]> => {
-    console.log("axiosInstance", axiosInstance);
     try {
         const response = await axiosInstance.get('/vehicles', {
             params: { vehicleTypeId },
         });
-        console.log("Vehicle Types Response", response.data);
         return response.data?.vehicles || [];
     } catch (error) {
         console.error('Error fetching vehicle types:', error);
@@ -20,8 +19,11 @@ export const createBooking = async (data: any) => {
     try {
         const newData = bookingsTransformer(data)
         const response = await axiosInstance.post('/bookings/create', newData)
+        toast.success('Your is Done Booking Successfully')
+
         return response.data
-    } catch (error) {
+    } catch (error: any) {
+        toast.error(error?.response?.data.error)
         console.error('Error creating booking:', error);
         throw error;
     }
